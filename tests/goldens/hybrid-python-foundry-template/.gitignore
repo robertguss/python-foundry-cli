@@ -5,3 +5,9 @@ __pycache__/
 .mypy_cache/
 dist/
 *.egg-info/
+
+# fnox + age: private key material MUST NOT be committed (REQ-058).
+age.txt
+age-key.txt
+*.agekey
+.age/

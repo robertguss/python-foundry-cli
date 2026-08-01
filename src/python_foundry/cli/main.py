@@ -286,6 +286,7 @@ def generate_cmd(
             "verify_mode": result.verify_mode,
             "verify_source": result.verify_source,
             "network_disclosure": result.network_disclosure,
+            "verify_warning": result.verify_warning,
         }
         typer.echo(canonical_json_bytes(payload).decode("utf-8"))
     else:
@@ -294,6 +295,8 @@ def generate_cmd(
         typer.echo(f"  plan_sha256: {result.plan.plan_sha256}")
         typer.echo(f"  verify: {result.verify_mode} (source={result.verify_source})")
         typer.echo(f"  network: {NETWORK_DISCLOSURE}")
+        if result.verify_warning:
+            typer.echo(f"  WARNING: {result.verify_warning}", err=True)
 
 
 @app.callback()

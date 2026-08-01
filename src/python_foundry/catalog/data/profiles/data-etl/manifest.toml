@@ -3,6 +3,7 @@ id = "data-etl"
 kind = "profile"
 description = "Data/ETL tooling profile (polars+pyarrow; distinct from archetype/data-etl)"
 apply_order = 40
+dependencies = ["polars>=1.9,<2", "pyarrow>=17,<18"]
 
 [[files]]
 path = "src/{{module}}/etl_utils.py"

@@ -6,7 +6,16 @@ from pathlib import Path
 
 from python_foundry.generate import generate
 
-FORBIDDEN = ("CLAUDE.md", ".claude", ".env", ".env.example")
+FORBIDDEN = (
+    "CLAUDE.md",
+    ".claude",
+    ".env",
+    ".env.example",
+    ".cursor",
+    ".cursorrules",
+    "mcp.json",
+    ".mcp.json",
+)
 
 
 def _iter_project_files(dest: Path) -> list[Path]:

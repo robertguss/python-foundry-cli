@@ -1,0 +1,14 @@
+# fnox secrets config (REQ-058): age provider skeleton.
+#
+# 1. Generate an identity:   age-keygen -o ~/.config/fnox/age.txt
+# 2. Copy the printed "public key: age1..." into recipients below.
+# 3. Add secrets:            fnox set NAME VALUE --provider age
+# 4. Run with secrets:       fnox exec -- uv run <entry>
+#
+# Never commit a private age key; do not use .env / python-dotenv for secrets.
+
+[providers.age]
+type = "age"
+recipients = []
+
+[secrets]

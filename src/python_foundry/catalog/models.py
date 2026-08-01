@@ -33,6 +33,9 @@ class UnitManifest:
     apply_order: int
     files: tuple[FileEntry, ...]
     manifest_path: str
+    # Extra project dependencies this unit contributes (REQ-059/REQ-061), in
+    # manifest-declared order. Empty for units that add no dependencies.
+    dependencies: tuple[str, ...] = ()
 
     @property
     def ref(self) -> str:

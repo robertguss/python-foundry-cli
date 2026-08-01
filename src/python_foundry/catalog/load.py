@@ -234,6 +234,15 @@ def _parse_manifest(
         for index, item in enumerate(files_raw)
     ]
 
+    deps_raw = raw.get("dependencies", [])
+    if not isinstance(deps_raw, list) or not all(
+        isinstance(d, str) and d for d in deps_raw
+    ):
+        raise CatalogLoadError(
+            f"manifest {path} dependencies must be an array of non-empty strings",
+            code="catalog.manifest_dependencies",
+        )
+
     return UnitManifest(
         kind=cast(Kind, mkind),
         id=unit_id,
@@ -241,6 +250,7 @@ def _parse_manifest(
         apply_order=apply_order,
         files=tuple(entries),
         manifest_path=path,
+        dependencies=tuple(deps_raw),
     )
 
 

@@ -30,6 +30,12 @@ source = "files/gitignore.static"
 mode = "0644"
 
 [[files]]
+path = "fnox.toml"
+render = "static"
+source = "files/fnox.toml.static"
+mode = "0644"
+
+[[files]]
 path = ".agents/skills/quality-gates/SKILL.md"
 render = "template"
 source = "files/agents/skills/quality-gates/SKILL.md.tmpl"

@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+import json
+from collections.abc import Mapping, Sequence
 from importlib import resources
 from pathlib import Path
 
@@ -24,7 +25,9 @@ class RenderError(Exception):
         self.code = code
 
 
-def build_context(spec: ProjectSpec) -> dict[str, str]:
+def build_context(
+    spec: ProjectSpec, dependencies: Sequence[str] = ()
+) -> dict[str, str]:
     # Project name may be kebab-case; importable package path needs underscores.
     module = spec.name.replace("-", "_")
     return {
@@ -34,7 +37,16 @@ def build_context(spec: ProjectSpec) -> dict[str, str]:
         "archetype": spec.archetype,
         "python_version": spec.python_version,
         "destination": spec.destination,
+        # Resolved archetype/profile dependency additions (REQ-059/REQ-061),
+        # rendered as a TOML/Python-compatible array-of-strings literal.
+        "dependencies_toml": _dependencies_toml(dependencies),
     }
+
+
+def _dependencies_toml(dependencies: Sequence[str]) -> str:
+    if not dependencies:
+        return "[]"
+    return "[" + ", ".join(json.dumps(dep) for dep in dependencies) + "]"
 
 
 def load_unit_source(owner_kind: str, owner_id: str, source: str) -> bytes:
@@ -68,7 +80,11 @@ def render_plan_into_stage(
     context: Mapping[str, str] | None = None,
 ) -> list[Path]:
     """Render all planned files into *stage*. Does not place to destination."""
-    ctx = dict(context) if context is not None else build_context(spec)
+    if context is not None:
+        ctx = dict(context)
+    else:
+        deps = [str(d) for d in plan.body.get("dependencies", [])]
+        ctx = build_context(spec, deps)
     written: list[Path] = []
     for entry in plan.body["files"]:
         path_tmpl = str(entry["path"])

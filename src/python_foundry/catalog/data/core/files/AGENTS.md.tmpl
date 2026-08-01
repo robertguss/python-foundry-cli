@@ -11,6 +11,18 @@ uv run ty check
 uv run pytest
 ```
 
+## Definition of done (agents)
+
+`generate` default-verify success (sync + ruff + ty) is **not** the agent DoD.
+Before claiming work complete:
+
+1. `ruff check .` and `ruff format --check .` pass.
+2. `ty check` passes (no exit-zero masking).
+3. `pytest` passes; **0 tests collected is not success** unless the change is
+   explicitly docs-only.
+4. When pre-commit is configured, `pre-commit run --all-files` is green.
+5. No dotenv secret storage introduced.
+
 ## Secrets
 
 Use `fnox exec -- …` for secret-consuming commands. Do not store secrets in dotenv.

@@ -1,4 +1,14 @@
 """HTTP helpers for {{module}} (profile/http)."""
 
+from __future__ import annotations
+
+import httpx
+
+
 def client_name() -> str:
     return "httpx"
+
+
+def new_client(**kwargs: object) -> httpx.Client:
+    """Return a configured sync httpx.Client (profile/http default)."""
+    return httpx.Client(**kwargs)

@@ -6,8 +6,10 @@ import json
 from pathlib import Path
 
 import pytest
+from typer.testing import CliRunner
 
 from python_foundry.catalog import load_default_catalog
+from python_foundry.cli.main import app
 from python_foundry.fsx import create_stage
 from python_foundry.generate import GenerateError, generate
 from python_foundry.generate.lock import produce_uv_lock
@@ -17,6 +19,7 @@ from python_foundry.spec import load_spec
 
 REPO = Path(__file__).resolve().parents[1]
 MINIMAL = REPO / "examples" / "minimal-cli.toml"
+runner = CliRunner()
 
 
 def test_render_and_lock_in_stage(tmp_path: Path) -> None:
@@ -82,3 +85,65 @@ profiles = []
     assert result.verify_mode == "default"
     disc = result.network_disclosure.lower()
     assert "network" in disc or "uv" in disc
+
+
+def test_generate_verify_none_surfaces_loud_warning(tmp_path: Path) -> None:
+    """REQ-080 §9.5.2: --verify none is a loud, user-visible opt-out."""
+    dest = tmp_path / "none-cli"
+    spec_path = tmp_path / "cell.toml"
+    spec_path.write_text(
+        f'''
+schema = 1
+name = "none-cli"
+archetype = "cli"
+destination = "{dest}"
+profiles = []
+verify = "none"
+''',
+        encoding="utf-8",
+    )
+    result = generate(spec_path=spec_path, destination=dest)
+    assert result.placed
+    assert result.verify_mode == "none"
+    assert result.verify_warning
+    assert "no tooling proof" in result.verify_warning.lower()
+
+
+def test_generate_cmd_verify_none_prints_warning(tmp_path: Path) -> None:
+    dest = tmp_path / "none-cli-cmd"
+    spec_path = tmp_path / "cell.toml"
+    spec_path.write_text(
+        f'''
+schema = 1
+name = "none-cli-cmd"
+archetype = "cli"
+destination = "{dest}"
+profiles = []
+''',
+        encoding="utf-8",
+    )
+    result = runner.invoke(
+        app, ["generate", "--spec", str(spec_path), "--verify", "none"]
+    )
+    assert result.exit_code == 0
+    assert "WARNING" in result.output
+
+    dest_json = tmp_path / "none-cli-cmd-json"
+    spec_json = tmp_path / "cell-json.toml"
+    spec_json.write_text(
+        f'''
+schema = 1
+name = "none-cli-cmd-json"
+archetype = "cli"
+destination = "{dest_json}"
+profiles = []
+''',
+        encoding="utf-8",
+    )
+    js = runner.invoke(
+        app,
+        ["generate", "--spec", str(spec_json), "--verify", "none", "--json"],
+    )
+    assert js.exit_code == 0
+    body = json.loads(js.stdout)
+    assert body["verify_warning"]

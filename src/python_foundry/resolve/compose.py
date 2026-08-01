@@ -52,6 +52,7 @@ def resolve(spec: ProjectSpec, catalog: Catalog) -> ResolvedProject:
 
     units: tuple[UnitManifest, ...] = (core, archetype, *profile_units)
     files = _compose_files(units, selected_profile_ids=set(ordered_profiles))
+    dependencies = _compose_dependencies(units)
 
     return ResolvedProject(
         archetype=spec.archetype,
@@ -59,7 +60,17 @@ def resolve(spec: ProjectSpec, catalog: Catalog) -> ResolvedProject:
         units=units,
         files=files,
         catalog_digest=catalog.digest,
+        dependencies=dependencies,
     )
+
+
+def _compose_dependencies(units: tuple[UnitManifest, ...]) -> tuple[str, ...]:
+    """Merge unit dependencies in apply order, deduped by first occurrence."""
+    seen: dict[str, None] = {}
+    for unit in units:
+        for dep in unit.dependencies:
+            seen.setdefault(dep, None)
+    return tuple(seen)
 
 
 def _selected_profiles(

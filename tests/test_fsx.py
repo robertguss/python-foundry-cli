@@ -76,6 +76,31 @@ def test_stage_write_confined(tmp_path: Path) -> None:
         stage.write_text("../outside.txt", "nope")
 
 
+def test_path_confinement_rejects_symlink_escape(tmp_path: Path) -> None:
+    """REQ-032: a symlink inside the stage pointing outside MUST fail."""
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    stage = create_stage(tmp_path / "app")
+    escape_link = stage.path / "escape"
+    escape_link.symlink_to(outside, target_is_directory=True)
+    with pytest.raises(PathEscapeError):
+        confine_path(stage.path, "escape/evil.txt")
+
+
+def test_render_path_with_malicious_spec_value_is_still_confined(
+    tmp_path: Path,
+) -> None:
+    """REQ-032: rendered {{name}}-style paths cannot escape the stage root.
+
+    render_path() itself does not validate; confinement is enforced at write
+    time by Stage.write_text/write_bytes (belt-and-suspenders check here).
+    """
+    stage = create_stage(tmp_path / "app")
+    malicious = "../../../etc/passwd"
+    with pytest.raises(PathEscapeError):
+        stage.write_text(malicious, "pwned")
+
+
 def test_fail_nonempty_destination(tmp_path: Path) -> None:
     dest = tmp_path / "out"
     dest.mkdir()

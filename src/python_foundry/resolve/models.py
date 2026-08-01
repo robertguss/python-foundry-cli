@@ -33,3 +33,6 @@ class ResolvedProject:
     units: tuple[UnitManifest, ...]  # core → archetype → profiles (apply order)
     files: tuple[PlannedFile, ...]
     catalog_digest: str
+    # Merged unit dependencies (REQ-059/REQ-061), unit apply order, deduped by
+    # first occurrence.
+    dependencies: tuple[str, ...] = ()

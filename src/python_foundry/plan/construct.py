@@ -83,7 +83,7 @@ def construct(
             ],
         },
         "files": files,
-        "dependencies": [],
+        "dependencies": list(resolved.dependencies),
         "lock": {
             "produce": True,
             "tool": "uv",

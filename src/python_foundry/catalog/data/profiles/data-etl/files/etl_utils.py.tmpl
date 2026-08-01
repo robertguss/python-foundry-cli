@@ -1,4 +1,14 @@
 """ETL helpers for {{module}} (profile/data-etl, not archetype/data-etl)."""
 
+from __future__ import annotations
+
+import polars as pl
+
+
 def backend() -> str:
     return "polars"
+
+
+def empty_frame() -> pl.DataFrame:
+    """Return an empty polars DataFrame (profile/data-etl default backend)."""
+    return pl.DataFrame()

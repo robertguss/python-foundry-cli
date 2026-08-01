@@ -64,6 +64,101 @@ def test_profile_http_composition_plan() -> None:
     )
     paths = {f["path"] for f in plan.body["files"]}
     assert any("http_client" in p for p in paths)
+    # REQ-059: http profile MUST actually add httpx as a dependency.
+    assert any(dep.startswith("httpx") for dep in plan.body["dependencies"])
+
+
+def test_no_profiles_adds_no_dependencies() -> None:
+    cat = load_default_catalog()
+    plan = construct(
+        parse_spec_text(
+            'schema=1\nname="h"\narchetype="cli"\ndestination="./h"\nprofiles=[]\n'
+        ),
+        cat,
+    )
+    assert plan.body["dependencies"] == []
+
+
+def test_profile_data_etl_composition_plan() -> None:
+    cat = load_default_catalog()
+    plan = construct(
+        parse_spec_text(
+            'schema=1\nname="e"\narchetype="cli"\ndestination="./e"\n'
+            'profiles=["data-etl"]\n'
+        ),
+        cat,
+    )
+    # REQ-061: profile/data-etl default MUST be polars + pyarrow.
+    deps = plan.body["dependencies"]
+    assert any(dep.startswith("polars") for dep in deps)
+    assert any(dep.startswith("pyarrow") for dep in deps)
+
+
+def test_http_profile_dependency_rendered_into_pyproject(tmp_path: Path) -> None:
+    """REQ-059 acceptance: with/without profile inventories differ."""
+    dest = tmp_path / "http-app"
+    spec = tmp_path / "cell.toml"
+    spec.write_text(
+        f'''
+schema = 1
+name = "http-app"
+archetype = "cli"
+destination = "{dest}"
+profiles = ["http"]
+''',
+        encoding="utf-8",
+    )
+    result = generate(
+        spec_path=spec, destination=dest, run_lock=False, run_verify_tools=False
+    )
+    assert result.placed
+    pyproject = (dest / "pyproject.toml").read_text(encoding="utf-8")
+    assert "httpx" in pyproject
+    client = (dest / "src/http_app/http_client.py").read_text(encoding="utf-8")
+    assert "import httpx" in client
+
+
+def test_data_etl_profile_dependency_rendered_into_pyproject(tmp_path: Path) -> None:
+    dest = tmp_path / "etl-profile-app"
+    spec = tmp_path / "cell.toml"
+    spec.write_text(
+        f'''
+schema = 1
+name = "etl-profile-app"
+archetype = "cli"
+destination = "{dest}"
+profiles = ["data-etl"]
+''',
+        encoding="utf-8",
+    )
+    result = generate(
+        spec_path=spec, destination=dest, run_lock=False, run_verify_tools=False
+    )
+    assert result.placed
+    pyproject = (dest / "pyproject.toml").read_text(encoding="utf-8")
+    assert "polars" in pyproject
+    assert "pyarrow" in pyproject
+
+
+def test_no_profile_pyproject_has_empty_dependencies(tmp_path: Path) -> None:
+    dest = tmp_path / "plain-app"
+    spec = tmp_path / "cell.toml"
+    spec.write_text(
+        f'''
+schema = 1
+name = "plain-app"
+archetype = "cli"
+destination = "{dest}"
+profiles = []
+''',
+        encoding="utf-8",
+    )
+    result = generate(
+        spec_path=spec, destination=dest, run_lock=False, run_verify_tools=False
+    )
+    assert result.placed
+    pyproject = (dest / "pyproject.toml").read_text(encoding="utf-8")
+    assert "dependencies = []" in pyproject
 
 
 def test_hooks_hk_replaces_precommit_in_plan() -> None:
