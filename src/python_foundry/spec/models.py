@@ -15,9 +15,7 @@ PYTHON_FLOOR = (3, 12)
 # Pins accepted when python_version is set (≥ floor, documented support window).
 SUPPORTED_PYTHON_VERSIONS = frozenset({"3.12", "3.13", "3.14"})
 
-REQUIRED_KEYS = frozenset(
-    {"schema", "name", "archetype", "destination", "profiles"}
-)
+REQUIRED_KEYS = frozenset({"schema", "name", "archetype", "destination", "profiles"})
 OPTIONAL_KEYS = frozenset({"description", "python_version", "verify"})
 ALLOWED_KEYS = REQUIRED_KEYS | OPTIONAL_KEYS
 

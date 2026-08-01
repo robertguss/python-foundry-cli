@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from python_foundry.fsx.errors import FsxError, PathEscapeError, PlaceError, StageError
-from python_foundry.fsx.paths import confine_path, is_within_stage
+from python_foundry.fsx.paths import confine_path
 from python_foundry.fsx.place import (
     assert_destination_placeable,
     destination_is_nonempty,
@@ -30,6 +30,5 @@ __all__ = [
     "create_stage",
     "destination_is_nonempty",
     "exclusive_place",
-    "is_within_stage",
     "stage_basename",
 ]

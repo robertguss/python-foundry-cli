@@ -45,6 +45,9 @@ def exclusive_place(stage: Stage, destination: str | Path) -> Path:
     - Prefer same parent as stage (sibling) for rename place.
     """
     dest = assert_destination_placeable(destination)
+    # NOTE: this is a check-then-act sequence. It is acceptable for the current
+    # single-user, local CLI with no concurrent writers; if the tool ever runs
+    # under concurrent processes, this gap must be revisited.
     dest = dest if dest.is_absolute() else dest.resolve()
     stage_path = stage.path.resolve()
 

@@ -16,9 +16,7 @@ from python_foundry.catalog import (
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 AUTHORING_CATALOG = REPO_ROOT / "catalog"
-PACKAGE_DATA = (
-    REPO_ROOT / "src" / "python_foundry" / "catalog" / "data"
-)
+PACKAGE_DATA = REPO_ROOT / "src" / "python_foundry" / "catalog" / "data"
 
 
 def test_load_default_catalog_via_importlib_resources() -> None:
@@ -30,15 +28,18 @@ def test_load_default_catalog_via_importlib_resources() -> None:
 
 
 def test_authoring_tree_matches_package_data() -> None:
-    """Repo-root catalog/ is the authoring view of package data."""
+    """Repo-root catalog/ and package data produce the same digest."""
     assert AUTHORING_CATALOG.exists()
     assert PACKAGE_DATA.is_dir()
-    assert (AUTHORING_CATALOG / "versions.toml").is_file()
-    assert (PACKAGE_DATA / "versions.toml").is_file()
-    # Symlink or same content SoT.
-    auth = (AUTHORING_CATALOG / "versions.toml").resolve()
-    pkg = (PACKAGE_DATA / "versions.toml").resolve()
-    assert auth == pkg
+
+    def _files(root: Path) -> dict[str, bytes]:
+        return {
+            p.relative_to(root).as_posix(): p.read_bytes()
+            for p in root.rglob("*")
+            if p.is_file()
+        }
+
+    assert digest_map(_files(AUTHORING_CATALOG)) == digest_map(_files(PACKAGE_DATA))
 
 
 def test_list_returns_kind_and_id_for_dual_data_etl() -> None:

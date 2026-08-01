@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from python_foundry.catalog import load_default_catalog
+from python_foundry.catalog import Catalog, load_default_catalog
 from python_foundry.resolve import ResolveError, resolve
 from python_foundry.spec import ProjectSpec, parse_spec_text
 
@@ -23,6 +23,7 @@ profiles = {prof_toml}
 
 
 def test_exactly_one_archetype_cli() -> None:
+    """Focused unit-shape contract; complements broader integration coverage."""
     cat = load_default_catalog()
     resolved = resolve(_spec(archetype="cli"), cat)
     assert resolved.archetype == "cli"
@@ -30,6 +31,21 @@ def test_exactly_one_archetype_cli() -> None:
     assert kinds[0] == "core"
     assert kinds[1] == "archetype"
     assert resolved.units[1].id == "cli"
+
+
+def test_archetype_not_in_catalog_fails() -> None:
+    cat = load_default_catalog()
+    filtered = Catalog(
+        digest=cat.digest,
+        units=tuple(
+            u for u in cat.units if not (u.kind == "archetype" and u.id == "cli")
+        ),
+        versions_toml=cat.versions_toml,
+    )
+    with pytest.raises(ResolveError) as excinfo:
+        resolve(_spec(archetype="cli"), filtered)
+    assert excinfo.value.code == "resolve.unknown_archetype"
+    assert "not present in catalog" in excinfo.value.message
 
 
 def test_unknown_archetype_fails() -> None:

@@ -87,9 +87,7 @@ def _selected_profiles(
             )
         seen[profile_id] = index
         if not catalog.has("profile", profile_id):
-            available = sorted(
-                u.id for u in catalog.units if u.kind == "profile"
-            )
+            available = sorted(u.id for u in catalog.units if u.kind == "profile")
             raise ResolveError(
                 f"unknown profile {profile_id!r}; available: {available}",
                 code="resolve.unknown_profile",
@@ -110,11 +108,7 @@ def _compose_files(
         for entry in unit.files:
             path = entry.path
             # hooks-hk replaces Core default pre-commit emit (REQ-043).
-            if (
-                hooks_hk
-                and unit.kind == "core"
-                and path in HOOKS_HK_REPLACES
-            ):
+            if hooks_hk and unit.kind == "core" and path in HOOKS_HK_REPLACES:
                 continue
 
             new = PlannedFile(

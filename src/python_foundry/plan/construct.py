@@ -75,12 +75,8 @@ def construct(
         },
         "resolved": {
             "archetype": {"kind": "archetype", "id": resolved.archetype},
-            "profiles": [
-                {"kind": "profile", "id": pid} for pid in resolved.profiles
-            ],
-            "units": [
-                {"kind": u.kind, "id": u.id} for u in resolved.units
-            ],
+            "profiles": [{"kind": "profile", "id": pid} for pid in resolved.profiles],
+            "units": [{"kind": u.kind, "id": u.id} for u in resolved.units],
         },
         "files": files,
         "dependencies": list(resolved.dependencies),

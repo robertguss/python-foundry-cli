@@ -52,7 +52,7 @@ profiles = []
     fnox_toml = dest / "fnox.toml"
     assert fnox_toml.is_file()
     fnox_text = fnox_toml.read_text(encoding="utf-8")
-    assert '[providers.age]' in fnox_text
+    assert "[providers.age]" in fnox_text
     assert 'type = "age"' in fnox_text
     assert "load_dotenv" not in fnox_text
 
@@ -63,8 +63,6 @@ profiles = []
     assert "definition of done" in agents.lower()
     assert "0 tests collected is not success" in agents
 
-    skill = (dest / ".agents/skills/quality-gates/SKILL.md").read_text(
-        encoding="utf-8"
-    )
+    skill = (dest / ".agents/skills/quality-gates/SKILL.md").read_text(encoding="utf-8")
     assert "definition of done" in skill.lower()
     assert "0 tests collected is not success" in skill

@@ -78,9 +78,7 @@ def compare_trees(
         if actual[rel] != expected[rel]:
             a = hashlib.sha256(actual[rel]).hexdigest()[:12]
             e = hashlib.sha256(expected[rel]).hexdigest()[:12]
-            findings.append(
-                f"content drift: {rel} (generated={a} golden={e})"
-            )
+            findings.append(f"content drift: {rel} (generated={a} golden={e})")
     return findings
 
 

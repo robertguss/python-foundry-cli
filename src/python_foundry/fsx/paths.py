@@ -45,12 +45,3 @@ def confine_path(stage_root: Path, relative: str) -> Path:
             stage_path=str(root),
         ) from exc
     return candidate
-
-
-def is_within_stage(stage_root: Path, path: Path) -> bool:
-    root = stage_root.resolve()
-    try:
-        path.resolve().relative_to(root)
-        return True
-    except ValueError:
-        return False

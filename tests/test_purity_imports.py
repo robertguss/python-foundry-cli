@@ -1,11 +1,16 @@
-"""Architecture: plan package must not import write-path modules."""
+"""Architecture: pure packages must not import write-path modules."""
 
 from __future__ import annotations
 
 import ast
 from pathlib import Path
 
-PLAN_DIR = Path(__file__).resolve().parents[1] / "src" / "python_foundry" / "plan"
+import pytest
+
+REPO = Path(__file__).resolve().parents[1]
+SRC = REPO / "src" / "python_foundry"
+
+# Imports that would couple a read/pure package to write-path implementation.
 FORBIDDEN = frozenset(
     {
         "python_foundry.fsx",
@@ -16,6 +21,8 @@ FORBIDDEN = frozenset(
         "cli",
     }
 )
+
+PURE_PACKAGES = ["plan", "spec", "resolve", "catalog", "report"]
 
 
 def _imported_names(path: Path) -> set[str]:
@@ -30,10 +37,15 @@ def _imported_names(path: Path) -> set[str]:
     return names
 
 
-def test_plan_package_does_not_import_write_path() -> None:
-    py_files = list(PLAN_DIR.rglob("*.py"))
-    assert py_files, "expected plan package sources"
+@pytest.mark.parametrize("package", PURE_PACKAGES)
+def test_pure_package_does_not_import_write_path(package: str) -> None:
+    pkg_dir = SRC / package
+    py_files = list(pkg_dir.rglob("*.py"))
+    assert py_files, f"expected sources in {package}"
+    offenders: list[str] = []
     for path in py_files:
         imported = _imported_names(path)
-        offenders = imported & FORBIDDEN
-        assert not offenders, f"{path} imports forbidden modules: {offenders}"
+        bad = imported & FORBIDDEN
+        if bad:
+            offenders.append(f"{path.name} imports {bad}")
+    assert not offenders, f"{package}: {offenders}"

@@ -48,6 +48,47 @@ def test_encode_failure_phase01_classes() -> None:
         assert body["message"] == "boom"
 
 
+@pytest.mark.parametrize(
+    "error_class",
+    sorted(ERROR_CLASSES),
+)
+def test_encode_failure_round_trips_all_classes(error_class: str) -> None:
+    body = encode_failure(
+        error_class=error_class,
+        message="boom",
+        code=f"{error_class}.test",
+        stage_path="/tmp/stage",
+        verify_mode="default",
+        plan_sha256="a" * 64,
+    )
+    assert body["ok"] is False
+    assert body["error_class"] == error_class
+    assert body["code"] == f"{error_class}.test"
+    assert body["stage_path"] == "/tmp/stage"
+    assert body["verify_mode"] == "default"
+    assert body["plan_sha256"] == "a" * 64
+
+    raw_json = failure_json(
+        error_class=body["error_class"],
+        message=body["message"],
+        code=body["code"],
+        stage_path=body["stage_path"],
+        verify_mode=body["verify_mode"],
+        plan_sha256=body["plan_sha256"],
+    )
+    decoded = json.loads(raw_json)
+    assert decoded["error_class"] == error_class
+    assert decoded["code"] == f"{error_class}.test"
+
+    text = failure_text(
+        error_class=body["error_class"],
+        message=body["message"],
+        code=body["code"],
+    )
+    assert error_class in text
+    assert "boom" in text
+
+
 def test_unknown_error_class_rejected() -> None:
     with pytest.raises(ReportError) as excinfo:
         encode_failure(error_class="whoops", message="x")

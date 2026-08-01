@@ -75,8 +75,7 @@ def plan_text(plan: GenerationPlan) -> str:
     for entry in files[:20]:
         owner = entry["owner"]
         lines.append(
-            f"    - {entry['path']} [{entry['render']}] "
-            f"({owner['kind']}/{owner['id']})"
+            f"    - {entry['path']} [{entry['render']}] ({owner['kind']}/{owner['id']})"
         )
     if len(files) > 20:
         lines.append(f"    … {len(files) - 20} more")

@@ -6,14 +6,6 @@ from pathlib import Path
 
 from python_foundry.generate import generate
 
-FORBIDDEN_NAMES = {
-    "CLAUDE.md",
-    ".claude",
-    ".env",
-    ".env.example",
-    "python-dotenv",
-}
-
 
 def test_ms003a_cli_core_emit_surface(tmp_path: Path) -> None:
     dest = tmp_path / "core-cli"
@@ -55,17 +47,5 @@ profiles = []
     assert "fnox" in secrets.lower()
     assert "dotenv" not in secrets.lower() or "not" in secrets.lower()
 
-    # Forbidden-path suite on cli Core cell (skip venv/cache trees)
-    skip = {".venv", "__pycache__", ".ruff_cache", ".pytest_cache"}
-    paths = [
-        p
-        for p in dest.rglob("*")
-        if not any(part in skip for part in p.parts)
-    ]
-    names = {p.name for p in paths}
-    for bad in FORBIDDEN_NAMES:
-        assert bad not in names, f"forbidden path present: {bad}"
-    tree_text = "\n".join(p.as_posix() for p in paths)
-    assert "CLAUDE.md" not in tree_text
-    assert ".claude/" not in tree_text
-    assert ".env" not in names
+    # Forbidden-path assertions for the cli archetype now live in
+    # tests/test_forbidden_paths.py to avoid duplication with SPK-102 coverage.

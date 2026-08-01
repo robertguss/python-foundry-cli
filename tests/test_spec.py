@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import io
 from pathlib import Path
+from typing import TextIO, cast
 
 import pytest
 
@@ -16,6 +17,7 @@ from python_foundry.spec import (
     SpecValidationError,
     load_spec,
     load_spec_stream,
+    parse_spec_bytes,
     parse_spec_text,
 )
 
@@ -132,12 +134,6 @@ def test_optional_fields_and_profiles() -> None:
     assert spec.verify == "strict"
 
 
-def test_error_class_is_validation() -> None:
-    with pytest.raises(SpecError) as excinfo:
-        parse_spec_text(_minimal(schema=2))
-    assert excinfo.value.error_class == "validation"
-
-
 # ---------------------------------------------------------------------------
 # Invalid suite
 # ---------------------------------------------------------------------------
@@ -147,8 +143,7 @@ def test_error_class_is_validation() -> None:
     ("body", "code_substr", "msg_substr"),
     [
         pytest.param(
-            _minimal(extra_key="nope") if False else 'schema = 1\nname = "x"\n'
-            'archetype = "cli"\ndestination = "./x"\nprofiles = []\nunknown = 1\n',
+            _minimal(extra_key="nope"),
             "unknown_key",
             "unknown",
             id="unknown_key",
@@ -226,6 +221,7 @@ def test_invalid_suite(body: str, code_substr: str, msg_substr: str) -> None:
         parse_spec_text(body)
     err = excinfo.value
     assert isinstance(err, SpecParseError | SpecValidationError)
+    assert err.error_class == "validation"
     assert code_substr in err.code
     assert msg_substr.lower() in err.message.lower()
 
@@ -265,5 +261,63 @@ def test_load_spec_does_not_write(tmp_path: Path) -> None:
     before = {p.name: p.stat().st_mtime_ns for p in tmp_path.iterdir()}
     load_spec(spec_path)
     after = {p.name: p.stat().st_mtime_ns for p in tmp_path.iterdir()}
+    # Compare both file set and mtimes to catch any accidental write/rewrite.
     assert before == after
     assert list(tmp_path.iterdir()) == [spec_path]
+
+
+def test_parse_spec_bytes_invalid_utf8() -> None:
+    payload = b"\xff\xfe"
+    with pytest.raises(SpecParseError) as excinfo:
+        parse_spec_bytes(payload)
+    assert excinfo.value.code == "spec.encoding"
+
+
+def test_load_spec_stream_accepts_text_io() -> None:
+    text = MINIMAL_CLI.read_text(encoding="utf-8")
+    spec = load_spec_stream(io.StringIO(text), source="<str>")
+    assert spec.name == "example-cli"
+
+
+def test_load_spec_stream_rejects_unsupported_payload() -> None:
+    class _BadStream:
+        def read(self) -> int:
+            return 42
+
+    with pytest.raises(SpecParseError) as excinfo:
+        load_spec_stream(cast(TextIO, _BadStream()), source="<bad>")
+    assert excinfo.value.code == "spec.stream_type"
+
+
+def test_load_spec_stream_read_oserror() -> None:
+    class _FailingStream:
+        def read(self) -> None:
+            raise OSError("disk failed")
+
+    with pytest.raises(SpecParseError) as excinfo:
+        load_spec_stream(cast(TextIO, _FailingStream()), source="<fail>")
+    assert excinfo.value.code == "spec.read"
+
+
+def test_schema_bool_rejected() -> None:
+    with pytest.raises(SpecValidationError) as excinfo:
+        parse_spec_text(_minimal(schema=True))
+    assert excinfo.value.code == "spec.schema_type"
+
+
+def test_description_non_string_rejected() -> None:
+    with pytest.raises(SpecValidationError) as excinfo:
+        parse_spec_text(_minimal(description=1))
+    assert excinfo.value.code == "spec.field_type"
+
+
+def test_empty_profile_string_rejected() -> None:
+    with pytest.raises(SpecValidationError) as excinfo:
+        parse_spec_text(_minimal(profiles=[""]))
+    assert excinfo.value.code == "spec.profile_type"
+
+
+def test_whitespace_only_profile_string_rejected() -> None:
+    with pytest.raises(SpecValidationError) as excinfo:
+        parse_spec_text(_minimal(profiles=["   "]))
+    assert excinfo.value.code == "spec.profile_type"

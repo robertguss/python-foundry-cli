@@ -4,9 +4,11 @@ from __future__ import annotations
 
 import subprocess
 from pathlib import Path
+from typing import cast
 
 import pytest
 
+from python_foundry.generate import GenerateError
 from python_foundry.hybrid.snapshot import (
     HybridSnapshotError,
     assert_no_drift,
@@ -102,6 +104,63 @@ def test_module_cli_exits_nonzero_on_drift(
     )
     assert proc.returncode != 0, proc.stdout + proc.stderr
     assert "drift" in (proc.stderr + proc.stdout).lower()
+
+
+def test_collect_tree_rejects_missing_root(tmp_path: Path) -> None:
+    with pytest.raises(HybridSnapshotError) as excinfo:
+        collect_tree(tmp_path / "missing")
+    assert excinfo.value.code == "hybrid.missing_root"
+
+
+def test_write_tree_replaces_existing_root(tmp_path: Path) -> None:
+    root = tmp_path / "root"
+    root.mkdir()
+    (root / "old.txt").write_bytes(b"old")
+    write_tree(root, {"new.txt": b"new"})
+    assert (root / "new.txt").read_bytes() == b"new"
+    assert not (root / "old.txt").exists()
+
+
+def test_check_hybrid_snapshot_wraps_generate_error(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def _fake_generate(**kwargs: object) -> None:
+        raise GenerateError("boom", error_class="internal", code="generate.internal")
+
+    monkeypatch.setattr("python_foundry.generate.generate", _fake_generate)
+
+    with pytest.raises(HybridSnapshotError) as excinfo:
+        check_hybrid_snapshot(
+            spec_path=SPEC,
+            golden_dir=GOLDEN,
+            work_dir=tmp_path / "work",
+            run_verify_tools=False,
+        )
+    assert excinfo.value.code == "hybrid.generate"
+    assert "boom" in excinfo.value.message
+
+
+def test_check_hybrid_snapshot_clears_existing_destination(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def _fake_generate(**kwargs: object) -> None:
+        dest = cast(Path, kwargs["destination"])
+        dest.mkdir(parents=True, exist_ok=True)
+        (dest / "fresh.txt").write_bytes(b"fresh")
+
+    monkeypatch.setattr("python_foundry.generate.generate", _fake_generate)
+    dest = tmp_path / "work" / "python-foundry-template"
+    dest.mkdir(parents=True)
+    (dest / "stale.txt").write_bytes(b"stale")
+
+    check_hybrid_snapshot(
+        spec_path=SPEC,
+        golden_dir=GOLDEN,
+        work_dir=tmp_path / "work",
+        run_verify_tools=False,
+    )
+    assert (dest / "fresh.txt").read_bytes() == b"fresh"
+    assert not (dest / "stale.txt").exists()
 
 
 def test_module_cli_exits_zero_on_match(tmp_path: Path) -> None:
