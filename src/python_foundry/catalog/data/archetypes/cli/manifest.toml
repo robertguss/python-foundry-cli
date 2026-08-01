@@ -22,3 +22,9 @@ path = "tests/test_version.py"
 render = "template"
 source = "files/test_version.py.tmpl"
 mode = "0644"
+
+[[files]]
+path = ".agents/skills/add-cli-command/SKILL.md"
+render = "template"
+source = "files/agents/skills/add-cli-command/SKILL.md.tmpl"
+mode = "0644"

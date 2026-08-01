@@ -32,3 +32,11 @@ select = ["E", "F", "I", "UP", "B"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+
+[tool.ty.environment]
+python-version = "{{python_version}}"
+
+# SPK-002 frozen practical defaults (PHASE-04):
+# - ty Required in default verify (not demotable without DEC)
+# - python-version aligned with project pin
+# Residual: advanced ty rule knobs deferred; pin notes live in versions.toml

@@ -28,3 +28,21 @@ path = ".gitignore"
 render = "static"
 source = "files/gitignore.static"
 mode = "0644"
+
+[[files]]
+path = ".agents/skills/quality-gates/SKILL.md"
+render = "template"
+source = "files/agents/skills/quality-gates/SKILL.md.tmpl"
+mode = "0644"
+
+[[files]]
+path = ".agents/skills/secrets-fnox/SKILL.md"
+render = "template"
+source = "files/agents/skills/secrets-fnox/SKILL.md.tmpl"
+mode = "0644"
+
+[[files]]
+path = ".github/workflows/ci.yml"
+render = "template"
+source = "files/workflows/ci.yml.tmpl"
+mode = "0644"
