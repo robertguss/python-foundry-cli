@@ -1,0 +1,12 @@
+# scripts archetype — stub inventory (full bodies PHASE-04).
+schema = 1
+id = "scripts"
+kind = "archetype"
+description = "Scripts-oriented project archetype"
+apply_order = 10
+
+[[files]]
+path = "scripts/hello.py"
+render = "template"
+source = "files/hello.py.tmpl"
+mode = "0644"

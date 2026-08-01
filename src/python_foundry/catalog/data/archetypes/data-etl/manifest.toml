@@ -1,0 +1,12 @@
+# data-etl archetype — stub inventory (distinct from profile/data-etl; FND-007).
+schema = 1
+id = "data-etl"
+kind = "archetype"
+description = "Data/ETL project archetype"
+apply_order = 10
+
+[[files]]
+path = "src/{{name}}/pipeline.py"
+render = "template"
+source = "files/pipeline.py.tmpl"
+mode = "0644"

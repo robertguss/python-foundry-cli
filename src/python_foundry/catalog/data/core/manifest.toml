@@ -1,0 +1,30 @@
+# Core unit — every Generated Project (stub inventory for PHASE-01 resolve).
+schema = 1
+id = "core"
+kind = "core"
+description = "Core toolchain, layout, quality gates, secrets, CI, and AGENTS for every Generated Project"
+apply_order = 0
+
+[[files]]
+path = "pyproject.toml"
+render = "template"
+source = "files/pyproject.toml.tmpl"
+mode = "0644"
+
+[[files]]
+path = "AGENTS.md"
+render = "template"
+source = "files/AGENTS.md.tmpl"
+mode = "0644"
+
+[[files]]
+path = ".python-version"
+render = "template"
+source = "files/python-version.tmpl"
+mode = "0644"
+
+[[files]]
+path = ".gitignore"
+render = "static"
+source = "files/gitignore.static"
+mode = "0644"

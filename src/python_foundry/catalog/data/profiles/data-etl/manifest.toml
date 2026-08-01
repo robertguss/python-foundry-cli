@@ -1,0 +1,12 @@
+# data-etl profile — stub inventory (distinct from archetype/data-etl; FND-007).
+schema = 1
+id = "data-etl"
+kind = "profile"
+description = "Data/ETL tooling profile"
+apply_order = 40
+
+[[files]]
+path = "src/{{name}}/etl_utils.py"
+render = "template"
+source = "files/etl_utils.py.tmpl"
+mode = "0644"

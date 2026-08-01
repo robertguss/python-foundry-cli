@@ -1,0 +1,15 @@
+# Closed catalog versions lock (v1 stub; full pins land with PHASE-04 content).
+# REQ-040 partial — present for digest + load; pin body expands later.
+
+schema = 1
+locked_at = "2026-08-01"
+
+[toolchain]
+python_floor = "3.12"
+python_default = "3.13"
+uv = "0.8.0"
+
+[tools]
+ruff = "0.12.0"
+ty = "0.0.1a"
+pytest = "8.4.0"

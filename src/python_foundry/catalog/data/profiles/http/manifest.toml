@@ -1,0 +1,12 @@
+# http profile — stub inventory (full bodies PHASE-04).
+schema = 1
+id = "http"
+kind = "profile"
+description = "HTTP client profile"
+apply_order = 20
+
+[[files]]
+path = "src/{{name}}/http_client.py"
+render = "template"
+source = "files/http_client.py.tmpl"
+mode = "0644"

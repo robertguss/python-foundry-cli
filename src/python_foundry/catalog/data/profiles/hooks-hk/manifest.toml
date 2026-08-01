@@ -1,0 +1,12 @@
+# hooks-hk profile — replaces default pre-commit hooks (stub inventory).
+schema = 1
+id = "hooks-hk"
+kind = "profile"
+description = "hk hooks profile (replaces default pre-commit emit)"
+apply_order = 30
+
+[[files]]
+path = "hk.pkl"
+render = "static"
+source = "files/hk.pkl.static"
+mode = "0644"
