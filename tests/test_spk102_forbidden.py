@@ -29,8 +29,10 @@ def _assert_clean(dest: Path) -> None:
     text = "\n".join(
         p.read_text(encoding="utf-8", errors="ignore") for p in files
     )
-    assert "load_dotenv" not in text
-    assert "python-dotenv" not in text
+    # Teach-forbid text may mention dotenv; ban actual usage APIs only.
+    assert "load_dotenv(" not in text
+    assert "import dotenv" not in text
+    assert "from dotenv" not in text
 
 
 def _cell(tmp_path: Path, name: str, archetype: str) -> Path:
