@@ -13,7 +13,7 @@ planning live in [python-foundry](https://github.com/robertguss/python-foundry)
 | **CLI (provisional)** | `foundry` |
 | **Python** | ≥ 3.13 (uv) |
 | **Hosts** | Linux required (CI); macOS optional; **no Windows** |
-| **Current phase** | **PHASE-01** — pure pipeline (write-free) |
+| **Current phase** | v1 delivery complete (PHASE-01..06) |
 
 ## Specification authority
 
@@ -29,14 +29,10 @@ Agent rules for this repo: [`AGENTS.md`](AGENTS.md).
 
 ## Status
 
-Scaffold only. PHASE-01 implements write-free commands:
+v1 product pipeline is implemented:
 
-- `foundry validate`
-- `foundry plan`
-- `foundry catalog list|show`
-- `foundry version`
-
-`generate` is a stub until PHASE-03 (after filesystem stage/place in PHASE-02).
+- `foundry validate` / `plan` / `catalog list|show` / `version` / `generate`
+- Closed catalog Core + archetypes + profiles; exclusive place; generate-time lock
 
 ## Quickstart
 

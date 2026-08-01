@@ -148,3 +148,16 @@ bd prime                # Refresh Beads context
 
 **Architecture in one line:** issues live in a local Dolt DB; sync uses `refs/dolt/data` on your git remote; `.beads/issues.jsonl` is a passive export. See https://github.com/gastownhall/beads/blob/main/docs/SYNC_CONCEPTS.md for details and anti-patterns.
 <!-- END BEADS CODEX SETUP -->
+
+
+## Plan bind workflow (FND-004 / RSK-108)
+
+Recommended agent workflow:
+
+1. `foundry validate --spec PATH`
+2. `foundry plan --spec PATH --json > plan.json` and review the plan
+3. `foundry generate --spec PATH --plan plan.json`
+
+**Trust rule:** reviewing a plan then running unbound `generate` is **not** a
+two-phase commit. Only `generate --plan plan.json` binds the reviewed plan
+(mismatch fails with `error_class=plan_bind` before stage writes).

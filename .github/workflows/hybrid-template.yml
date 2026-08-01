@@ -1,0 +1,29 @@
+name: hybrid-template-snapshot
+on:
+  push:
+    paths:
+      - "catalog/**"
+      - "src/python_foundry/catalog/**"
+      - "examples/python-foundry-template.toml"
+      - ".github/workflows/hybrid-template.yml"
+  workflow_dispatch:
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync --locked
+      - name: Generate frozen public template cell
+        run: |
+          uv run foundry generate \
+            --spec examples/python-foundry-template.toml \
+            --dest /tmp/python-foundry-template \
+            --json
+      - name: Assert no forbidden paths
+        run: |
+          test ! -e /tmp/python-foundry-template/CLAUDE.md
+          test ! -d /tmp/python-foundry-template/.claude
+          test ! -e /tmp/python-foundry-template/.env
+          test -f /tmp/python-foundry-template/uv.lock
+          test -f /tmp/python-foundry-template/AGENTS.md

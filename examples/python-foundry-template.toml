@@ -1,0 +1,11 @@
+# Frozen public template Project Spec cell (REQ-089 / §9.9).
+# Do not hand-edit the public hybrid template repo as a second catalog.
+
+schema = 1
+name = "python-foundry-template"
+description = "Frozen public GitHub template cell (cli, empty profiles, python 3.13)"
+archetype = "cli"
+destination = "./python-foundry-template"
+profiles = []
+python_version = "3.13"
+# verify omitted → effective default

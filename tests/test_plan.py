@@ -113,7 +113,7 @@ def test_verify_fields_on_plan_from_cli() -> None:
 # Frozen FND-009 vector for minimal-cli + VECTOR_FOUNDRY_VERSION + shipped catalog.
 # Update deliberately when Construct shape or catalog stubs change.
 FIXED_PLAN_SHA256 = (
-    "2099f1ff569ba7de5d27daf727e1e533211e2d034536e2fe7de24712b2a95b78"
+    "ad6467e2414cd067a7a40afc781dede45157ef72132ea4bf9c734ecb1aa0b486"
 )
 
 

@@ -14,3 +14,11 @@ uv run pytest
 ## Secrets
 
 Use `fnox exec -- …` for secret-consuming commands. Do not store secrets in dotenv.
+
+## Plan bind workflow
+
+1. `foundry validate --spec PATH`
+2. `foundry plan --spec PATH --json > plan.json` (review)
+3. `foundry generate --spec PATH --plan plan.json`
+
+Reviewing a plan then unbound `generate` is **not** a two-phase commit (FND-004).
