@@ -2,6 +2,12 @@
 
 from __future__ import annotations
 
+from python_foundry.plan.bind import (
+    PlanBindError,
+    bind_plan,
+    load_plan_artifact,
+    rebuild_plan,
+)
 from python_foundry.plan.canonical import (
     canonical_json_bytes,
     content_digest,
@@ -13,8 +19,12 @@ from python_foundry.plan.models import GenerationPlan
 __all__ = [
     "PLAN_SCHEMA",
     "GenerationPlan",
+    "PlanBindError",
+    "bind_plan",
     "canonical_json_bytes",
     "construct",
     "content_digest",
+    "load_plan_artifact",
+    "rebuild_plan",
     "sha256_hex",
 ]
