@@ -1,0 +1,20 @@
+---
+name: quality-gates
+description: Run uv/ruff/ty/pytest quality gates for python-foundry-template
+---
+
+# Quality gates
+
+```bash
+uv sync --locked
+uv run ruff check .
+uv run ruff format --check .
+uv run ty check
+uv run pytest
+```
+
+ty is Required in default verify. Do not demote without an explicit DEC.
+
+## With foundry
+
+Prefer `foundry generate --plan plan.json` after reviewing plan JSON.

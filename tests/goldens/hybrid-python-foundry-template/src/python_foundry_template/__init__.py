@@ -1,0 +1,3 @@
+"""python_foundry_template package."""
+
+__version__ = "0.1.0"
