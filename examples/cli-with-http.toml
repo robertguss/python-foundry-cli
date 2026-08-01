@@ -1,0 +1,10 @@
+# CLI project with the HTTP client profile.
+# The http profile adds httpx and a starter http_client.py module.
+
+schema = 1
+name = "example-cli-with-http"
+description = "CLI project with httpx support"
+archetype = "cli"
+destination = "./example-cli-with-http"
+profiles = ["http"]
+python_version = "3.13"

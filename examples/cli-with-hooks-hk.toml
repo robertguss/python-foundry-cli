@@ -1,0 +1,10 @@
+# CLI project using hk hooks instead of the default pre-commit config.
+# The hooks-hk profile replaces .pre-commit-config.yaml with a hk.pkl file.
+
+schema = 1
+name = "example-cli-with-hooks-hk"
+description = "CLI project using hk hooks"
+archetype = "cli"
+destination = "./example-cli-with-hooks-hk"
+profiles = ["hooks-hk"]
+python_version = "3.13"

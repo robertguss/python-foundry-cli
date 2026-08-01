@@ -1,0 +1,9 @@
+# Scripts-oriented project using PEP 723 inline metadata + uv run.
+
+schema = 1
+name = "example-scripts"
+description = "Scripts project with a hello.py starter"
+archetype = "scripts"
+destination = "./example-scripts"
+profiles = []
+python_version = "3.13"

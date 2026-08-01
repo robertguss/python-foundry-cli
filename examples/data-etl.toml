@@ -1,0 +1,11 @@
+# Data/ETL project. The archetype data-etl builds a src package pipeline;
+# the profile data-etl adds polars + pyarrow and a starter etl_utils module.
+# Note: pyarrow may require a working C++ build toolchain on some systems.
+
+schema = 1
+name = "example-data-etl"
+description = "Data/ETL project with polars and pyarrow"
+archetype = "data-etl"
+destination = "./example-data-etl"
+profiles = ["data-etl"]
+python_version = "3.13"
