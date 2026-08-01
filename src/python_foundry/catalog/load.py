@@ -268,11 +268,18 @@ def _parse_file_entry(item: Any, *, path: str, index: int) -> FileEntry:
             f"manifest {path} files[{index}] mode must be a string",
             code="catalog.file_mode",
         )
+    override = item.get("override", False)
+    if not isinstance(override, bool):
+        raise CatalogLoadError(
+            f"manifest {path} files[{index}] override must be a bool",
+            code="catalog.file_override",
+        )
     return FileEntry(
         path=item["path"],
         render=render,
         source=item["source"],
         mode=mode,
+        override=override,
     )
 
 

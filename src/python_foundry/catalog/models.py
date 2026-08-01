@@ -18,6 +18,9 @@ class FileEntry:
     render: RenderMode
     source: str
     mode: str = "0644"
+    # Later-applied unit may replace an earlier path only when override is true
+    # (REQ-043 / §9.7). Default false → collision hard-fail.
+    override: bool = False
 
 
 @dataclass(frozen=True, slots=True)
