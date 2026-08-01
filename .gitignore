@@ -15,6 +15,12 @@ wheels/
 .mypy_cache/
 .ty_cache/
 
+# Coverage artifacts
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
 # OS / editor
 .DS_Store
 *.swp

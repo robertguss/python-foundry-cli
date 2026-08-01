@@ -3,23 +3,15 @@ name = "python-foundry"
 version = "0.1.0"
 description = "AI-native hybrid foundry for modern Python projects (CLI + Core + template)"
 readme = "README.md"
-authors = [
-    { name = "Robert Guss", email = "robertguss@gmail.com" },
-]
+authors = [{ name = "Robert Guss", email = "robertguss@gmail.com" }]
 requires-python = ">=3.13"
-dependencies = [
-    "typer>=0.15",
-]
+dependencies = ["typer>=0.15"]
 
 [project.scripts]
 foundry = "python_foundry.cli.main:main"
 
 [dependency-groups]
-dev = [
-    "pytest>=8",
-    "ruff>=0.11",
-    "ty>=0.0.1a",
-]
+dev = ["pytest>=8", "pytest-cov>=7.1.0", "ruff>=0.11", "ty>=0.0.1a"]
 
 [build-system]
 requires = ["uv_build>=0.11.27,<0.12.0"]
@@ -36,7 +28,33 @@ select = ["E", "F", "I", "UP", "B"]
 testpaths = ["tests"]
 pythonpath = ["src"]
 # Golden snapshot trees are fixtures, not pytest suites.
-norecursedirs = ["goldens", "*.egg", ".*", "build", "dist", "CVS", "_darcs", "{arch}", "*.egg-info"]
+norecursedirs = [
+    "goldens",
+    "*.egg",
+    ".*",
+    "build",
+    "dist",
+    "CVS",
+    "_darcs",
+    "{arch}",
+    "*.egg-info",
+]
 
 [tool.ty.src]
 exclude = ["tests/goldens/**"]
+
+[tool.coverage.run]
+source = ["src/python_foundry"]
+branch = true
+
+[tool.coverage.report]
+# Baseline captured 2026-08-01 with branch coverage enabled (82.62% actual).
+# Ratchet this up as python-foundry-cli-o63 (test hardening epic) closes
+# gaps; never lower it to make a failing build pass.
+fail_under = 82
+show_missing = true
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+]
