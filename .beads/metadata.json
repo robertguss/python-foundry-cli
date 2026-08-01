@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "embedded",
+  "dolt_database": "python_foundry_cli",
+  "project_id": "69e7fa44-d2d8-462b-891f-bcefaf1a3cf4"
+}
