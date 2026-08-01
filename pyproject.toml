@@ -35,6 +35,8 @@ select = ["E", "F", "I", "UP", "B"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+# Golden snapshot trees are fixtures, not pytest suites.
+norecursedirs = ["goldens", "*.egg", ".*", "build", "dist", "CVS", "_darcs", "{arch}", "*.egg-info"]
 
 [tool.ty.src]
 exclude = ["tests/goldens/**"]
