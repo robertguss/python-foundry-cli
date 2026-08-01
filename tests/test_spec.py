@@ -21,9 +21,6 @@ from python_foundry.spec import (
     parse_spec_text,
 )
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
-MINIMAL_CLI = REPO_ROOT / "examples" / "minimal-cli.toml"
-
 
 def _minimal(**overrides: object) -> str:
     """Build a minimal-cli-shaped TOML body with optional overrides."""
@@ -72,10 +69,10 @@ def _toml_assign(key: str, value: object) -> str:
 # ---------------------------------------------------------------------------
 
 
-def test_parse_minimal_cli_example_fixture() -> None:
+def test_parse_minimal_cli_example_fixture(minimal_spec_path: Path) -> None:
     """Ship examples/minimal-cli.toml must validate as the PHASE-01 golden cell."""
-    text = MINIMAL_CLI.read_text(encoding="utf-8")
-    spec = parse_spec_text(text, source=str(MINIMAL_CLI))
+    text = minimal_spec_path.read_text(encoding="utf-8")
+    spec = parse_spec_text(text, source=str(minimal_spec_path))
     assert isinstance(spec, ProjectSpec)
     assert spec.schema == 1
     assert spec.name == "example-cli"
@@ -87,24 +84,26 @@ def test_parse_minimal_cli_example_fixture() -> None:
     assert "Minimal" in (spec.description or "")
 
 
-def test_load_spec_from_path() -> None:
-    spec = load_spec(MINIMAL_CLI)
+def test_load_spec_from_path(minimal_spec_path: Path) -> None:
+    spec = load_spec(minimal_spec_path)
     assert spec.name == "example-cli"
-    assert spec.source == str(MINIMAL_CLI)
+    assert spec.source == str(minimal_spec_path)
 
 
-def test_load_spec_from_stream() -> None:
-    data = MINIMAL_CLI.read_bytes()
+def test_load_spec_from_stream(minimal_spec_path: Path) -> None:
+    data = minimal_spec_path.read_bytes()
     spec = load_spec_stream(io.BytesIO(data), source="<mem>")
     assert spec.archetype == "cli"
     assert spec.source == "<mem>"
 
 
 def test_load_spec_stdin_dash(
-    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    minimal_spec_path: Path,
 ) -> None:
     """REQ-023: path '-' reads the entire stdin stream."""
-    payload = MINIMAL_CLI.read_bytes()
+    payload = minimal_spec_path.read_bytes()
     monkeypatch.setattr(
         "python_foundry.spec.parse.sys.stdin",
         io.TextIOWrapper(io.BytesIO(payload), encoding="utf-8"),
@@ -273,8 +272,8 @@ def test_parse_spec_bytes_invalid_utf8() -> None:
     assert excinfo.value.code == "spec.encoding"
 
 
-def test_load_spec_stream_accepts_text_io() -> None:
-    text = MINIMAL_CLI.read_text(encoding="utf-8")
+def test_load_spec_stream_accepts_text_io(minimal_spec_path: Path) -> None:
+    text = minimal_spec_path.read_text(encoding="utf-8")
     spec = load_spec_stream(io.StringIO(text), source="<str>")
     assert spec.name == "example-cli"
 

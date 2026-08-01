@@ -16,47 +16,60 @@ from python_foundry.generate import GenerateError
 from python_foundry.plan import construct
 from python_foundry.spec import load_spec
 
-REPO = Path(__file__).resolve().parents[1]
-MINIMAL = REPO / "examples" / "minimal-cli.toml"
-runner = CliRunner()
 
-
-def test_version_prints_package_and_catalog_digest() -> None:
-    result = runner.invoke(app, ["version"])
+def test_version_prints_package_and_catalog_digest(cli_runner: CliRunner) -> None:
+    result = cli_runner.invoke(app, ["version"])
     assert result.exit_code == 0
     assert f"foundry {__version__}" in result.stdout
     digest = load_default_catalog().digest
     assert f"catalog_digest {digest}" in result.stdout
 
 
-def test_validate_minimal_cli() -> None:
-    result = runner.invoke(app, ["validate", "--spec", str(MINIMAL)])
+def test_validate_minimal_cli(
+    cli_runner: CliRunner, minimal_spec_path: Path
+) -> None:
+    result = cli_runner.invoke(app, ["validate", "--spec", str(minimal_spec_path)])
     assert result.exit_code == 0
     assert "foundry validate: ok" in result.stdout
     assert "example-cli" in result.stdout
 
 
-def test_validate_json_and_failure() -> None:
-    ok = runner.invoke(app, ["validate", "--spec", str(MINIMAL), "--json"])
+def test_validate_json_success(
+    cli_runner: CliRunner, minimal_spec_path: Path
+) -> None:
+    ok = cli_runner.invoke(
+        app, ["validate", "--spec", str(minimal_spec_path), "--json"]
+    )
     assert ok.exit_code == 0
     body = json.loads(ok.stdout)
     assert body["ok"] is True
-    bad = runner.invoke(app, ["validate", "--spec", str(MINIMAL), "--json"])
-    # Invalid path
-    missing = runner.invoke(app, ["validate", "--spec", "/no/such/spec.toml", "--json"])
+
+
+def test_validate_json_missing_spec_fails(cli_runner: CliRunner) -> None:
+    missing = cli_runner.invoke(
+        app, ["validate", "--spec", "/no/such/spec.toml", "--json"]
+    )
     assert missing.exit_code != 0
     fail = json.loads(missing.stdout)
     assert fail["ok"] is False
     assert fail["error_class"] == "validation"
-    del bad
 
 
-def test_plan_minimal_cli_text_and_json() -> None:
-    text = runner.invoke(app, ["plan", "--spec", str(MINIMAL)])
+def test_plan_minimal_cli_text(
+    cli_runner: CliRunner, minimal_spec_path: Path
+) -> None:
+    text = cli_runner.invoke(app, ["plan", "--spec", str(minimal_spec_path)])
     assert text.exit_code == 0
     assert "foundry plan" in text.stdout
     assert "plan_sha256:" in text.stdout
-    js = runner.invoke(app, ["plan", "--spec", str(MINIMAL), "--json"])
+
+
+def test_plan_minimal_cli_json(
+    cli_runner: CliRunner, minimal_spec_path: Path
+) -> None:
+    js = cli_runner.invoke(
+        app, ["plan", "--spec", str(minimal_spec_path), "--json"]
+    )
     assert js.exit_code == 0
     body = json.loads(js.stdout)
     assert body["ok"] is True
@@ -64,9 +77,12 @@ def test_plan_minimal_cli_text_and_json() -> None:
     assert len(body["plan"]["plan_sha256"]) == 64
 
 
-def test_plan_verify_cli_override() -> None:
-    result = runner.invoke(
-        app, ["plan", "--spec", str(MINIMAL), "--verify", "strict", "--json"]
+def test_plan_verify_cli_override(
+    cli_runner: CliRunner, minimal_spec_path: Path
+) -> None:
+    result = cli_runner.invoke(
+        app,
+        ["plan", "--spec", str(minimal_spec_path), "--verify", "strict", "--json"],
     )
     assert result.exit_code == 0
     body = json.loads(result.stdout)
@@ -74,7 +90,9 @@ def test_plan_verify_cli_override() -> None:
     assert body["plan"]["verify_source"] == "cli"
 
 
-def test_validate_plan_leave_destination_untouched(tmp_path: Path) -> None:
+def test_validate_plan_leave_destination_untouched(
+    tmp_path: Path, cli_runner: CliRunner
+) -> None:
     dest = tmp_path / "example-cli"
     dest.mkdir()
     marker = dest / "keep-me.txt"
@@ -94,8 +112,8 @@ profiles = []
 ''',
         encoding="utf-8",
     )
-    v = runner.invoke(app, ["validate", "--spec", str(spec)])
-    p = runner.invoke(app, ["plan", "--spec", str(spec)])
+    v = cli_runner.invoke(app, ["validate", "--spec", str(spec)])
+    p = cli_runner.invoke(app, ["plan", "--spec", str(spec)])
     assert v.exit_code == 0
     assert p.exit_code == 0
     after = {p.name: p.read_bytes() for p in dest.iterdir()}
@@ -107,8 +125,8 @@ profiles = []
     assert not any(n.startswith(".foundry-stage") for n in siblings)
 
 
-def test_catalog_list_kind_qualified() -> None:
-    result = runner.invoke(app, ["catalog", "list"])
+def test_catalog_list_kind_qualified(cli_runner: CliRunner) -> None:
+    result = cli_runner.invoke(app, ["catalog", "list"])
     assert result.exit_code == 0
     assert "archetype/cli" in result.stdout
     assert "archetype/data-etl" in result.stdout
@@ -116,24 +134,27 @@ def test_catalog_list_kind_qualified() -> None:
     assert "core/core" in result.stdout
 
 
-def test_catalog_show_distinguishes_data_etl() -> None:
-    a = runner.invoke(app, ["catalog", "show", "archetype/data-etl"])
-    b = runner.invoke(app, ["catalog", "show", "profile/data-etl"])
+def test_catalog_show_distinguishes_data_etl(cli_runner: CliRunner) -> None:
+    a = cli_runner.invoke(app, ["catalog", "show", "archetype/data-etl"])
+    b = cli_runner.invoke(app, ["catalog", "show", "profile/data-etl"])
     assert a.exit_code == 0
     assert b.exit_code == 0
     assert a.stdout != b.stdout
     assert "archetype/data-etl" in a.stdout
     assert "profile/data-etl" in b.stdout
-    missing = runner.invoke(app, ["catalog", "show", "archetype/nope"])
+
+
+def test_catalog_show_unknown_unit_fails(cli_runner: CliRunner) -> None:
+    missing = cli_runner.invoke(app, ["catalog", "show", "archetype/nope"])
     assert missing.exit_code != 0
 
 
-def test_real_uv_run_foundry_entry() -> None:
+def test_real_uv_run_foundry_version(repo_root: Path) -> None:
     """Drive the real console script path twice for consistency."""
     for _ in range(2):
         proc = subprocess.run(
             ["uv", "run", "foundry", "version"],
-            cwd=REPO,
+            cwd=repo_root,
             capture_output=True,
             text=True,
             check=False,
@@ -142,9 +163,13 @@ def test_real_uv_run_foundry_entry() -> None:
         assert f"foundry {__version__}" in proc.stdout
         assert "catalog_digest" in proc.stdout
 
+
+def test_real_uv_run_foundry_validate(
+    repo_root: Path, minimal_spec_path: Path
+) -> None:
     proc = subprocess.run(
-        ["uv", "run", "foundry", "validate", "--spec", str(MINIMAL)],
-        cwd=REPO,
+        ["uv", "run", "foundry", "validate", "--spec", str(minimal_spec_path)],
+        cwd=repo_root,
         capture_output=True,
         text=True,
         check=False,
@@ -152,9 +177,21 @@ def test_real_uv_run_foundry_entry() -> None:
     assert proc.returncode == 0, proc.stderr
     assert "foundry validate: ok" in proc.stdout
 
+
+def test_real_uv_run_foundry_plan_json(
+    repo_root: Path, minimal_spec_path: Path
+) -> None:
     proc = subprocess.run(
-        ["uv", "run", "foundry", "plan", "--spec", str(MINIMAL), "--json"],
-        cwd=REPO,
+        [
+            "uv",
+            "run",
+            "foundry",
+            "plan",
+            "--spec",
+            str(minimal_spec_path),
+            "--json",
+        ],
+        cwd=repo_root,
         capture_output=True,
         text=True,
         check=False,
@@ -164,8 +201,8 @@ def test_real_uv_run_foundry_entry() -> None:
     assert body["ok"] is True
 
 
-def test_catalog_list_json_output() -> None:
-    result = runner.invoke(app, ["catalog", "list", "--json"])
+def test_catalog_list_json_output(cli_runner: CliRunner) -> None:
+    result = cli_runner.invoke(app, ["catalog", "list", "--json"])
     assert result.exit_code == 0
     body = json.loads(result.stdout)
     assert body["ok"] is True
@@ -174,15 +211,17 @@ def test_catalog_list_json_output() -> None:
     assert "profile/data-etl" in refs
 
 
-def test_catalog_show_json_success_and_failure() -> None:
-    ok = runner.invoke(app, ["catalog", "show", "archetype/data-etl", "--json"])
+def test_catalog_show_json_success(cli_runner: CliRunner) -> None:
+    ok = cli_runner.invoke(app, ["catalog", "show", "archetype/data-etl", "--json"])
     assert ok.exit_code == 0
     body = json.loads(ok.stdout)
     assert body["ok"] is True
     assert body["unit"]["id"] == "data-etl"
     assert body["unit"]["kind"] == "archetype"
 
-    bad = runner.invoke(app, ["catalog", "show", "archetype/nope", "--json"])
+
+def test_catalog_show_json_unknown_fails(cli_runner: CliRunner) -> None:
+    bad = cli_runner.invoke(app, ["catalog", "show", "archetype/nope", "--json"])
     assert bad.exit_code != 0
     fail = json.loads(bad.stdout)
     assert fail["ok"] is False
@@ -190,7 +229,7 @@ def test_catalog_show_json_success_and_failure() -> None:
     assert fail["code"] == "catalog.unknown_unit"
 
 
-def test_generate_json_success(tmp_path: Path) -> None:
+def test_generate_json_success(tmp_path: Path, cli_runner: CliRunner) -> None:
     dest = tmp_path / "out"
     spec_path = tmp_path / "cell.toml"
     spec_path.write_text(
@@ -204,7 +243,7 @@ verify = "none"
 ''',
         encoding="utf-8",
     )
-    result = runner.invoke(
+    result = cli_runner.invoke(
         app, ["generate", "--spec", str(spec_path), "--dest", str(dest), "--json"]
     )
     assert result.exit_code == 0, result.output
@@ -218,9 +257,11 @@ verify = "none"
     assert body["verify_warning"] is not None
 
 
-def test_generate_json_validation_failure(tmp_path: Path) -> None:
+def test_generate_json_validation_failure(
+    tmp_path: Path, cli_runner: CliRunner
+) -> None:
     missing = tmp_path / "missing.toml"
-    result = runner.invoke(
+    result = cli_runner.invoke(
         app,
         ["generate", "--spec", str(missing), "--dest", str(tmp_path / "out"), "--json"],
     )
@@ -231,8 +272,12 @@ def test_generate_json_validation_failure(tmp_path: Path) -> None:
     assert body["code"] == "spec.read"
 
 
-def test_generate_json_plan_bind_failure(tmp_path: Path) -> None:
-    spec = load_spec(MINIMAL)
+def test_generate_json_plan_bind_failure(
+    tmp_path: Path,
+    cli_runner: CliRunner,
+    minimal_spec_path: Path,
+) -> None:
+    spec = load_spec(minimal_spec_path)
     plan = construct(spec, load_default_catalog())
     bad_plan = dict(plan.body)
     bad_plan["plan_sha256"] = "0" * 64
@@ -250,7 +295,7 @@ profiles = []
 ''',
         encoding="utf-8",
     )
-    result = runner.invoke(
+    result = cli_runner.invoke(
         app,
         [
             "generate",
@@ -270,7 +315,7 @@ profiles = []
     assert body["code"] == "plan_bind.mismatch"
 
 
-def test_generate_json_place_failure(tmp_path: Path) -> None:
+def test_generate_json_place_failure(tmp_path: Path, cli_runner: CliRunner) -> None:
     dest = tmp_path / "out"
     dest.mkdir()
     (dest / "existing.txt").write_text("keep\n", encoding="utf-8")
@@ -285,7 +330,7 @@ profiles = []
 ''',
         encoding="utf-8",
     )
-    result = runner.invoke(
+    result = cli_runner.invoke(
         app, ["generate", "--spec", str(spec_path), "--dest", str(dest), "--json"]
     )
     assert result.exit_code != 0
@@ -304,7 +349,11 @@ profiles = []
     ],
 )
 def test_generate_json_failure_schema(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, error_class: str, code: str
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    cli_runner: CliRunner,
+    error_class: str,
+    code: str,
 ) -> None:
     stage_path = str(tmp_path / "stage")
     plan_sha256 = "a" * 64
@@ -331,7 +380,7 @@ profiles = []
 ''',
         encoding="utf-8",
     )
-    result = runner.invoke(
+    result = cli_runner.invoke(
         app,
         [
             "generate",

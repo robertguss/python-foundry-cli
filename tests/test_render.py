@@ -20,17 +20,16 @@ from python_foundry.render import (
 from python_foundry.render.stage_render import _source_for_entry
 from python_foundry.spec import load_spec
 
-REPO = Path(__file__).resolve().parents[1]
-MINIMAL = REPO / "examples" / "minimal-cli.toml"
-
 
 def test_render_template_basic() -> None:
     assert render_template("hi {{ name }}!", {"name": "x"}) == "hi x!"
 
 
-def test_render_plan_into_stage_no_place(tmp_path: Path) -> None:
+def test_render_plan_into_stage_no_place(
+    tmp_path: Path, minimal_spec_path: Path
+) -> None:
     dest = tmp_path / "example-cli"
-    spec = load_spec(MINIMAL)
+    spec = load_spec(minimal_spec_path)
     plan = construct(spec, load_default_catalog())
     stage = create_stage(dest)
 

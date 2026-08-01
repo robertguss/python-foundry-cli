@@ -19,14 +19,12 @@ from python_foundry.plan.bind import _nested
 from python_foundry.plan.canonical import canonical_json_bytes
 from python_foundry.spec import load_spec
 
-REPO = Path(__file__).resolve().parents[1]
-MINIMAL = REPO / "examples" / "minimal-cli.toml"
 VECTOR_VERSION = "0.1.0-vector"
 
 
-def test_bind_match_succeeds(tmp_path: Path) -> None:
+def test_bind_match_succeeds(tmp_path: Path, minimal_spec_path: Path) -> None:
     cat = load_default_catalog()
-    spec = load_spec(MINIMAL)
+    spec = load_spec(minimal_spec_path)
     plan = construct(spec, cat, foundry_version=VECTOR_VERSION)
     artifact = tmp_path / "plan.json"
     artifact.write_text(json.dumps({"ok": True, "plan": plan.body}), encoding="utf-8")
@@ -42,9 +40,11 @@ def test_bind_match_succeeds(tmp_path: Path) -> None:
     assert bound.foundry_version == plan.foundry_version
 
 
-def test_bit_flipped_plan_sha256_fails_plan_bind(tmp_path: Path) -> None:
+def test_bit_flipped_plan_sha256_fails_plan_bind(
+    tmp_path: Path, minimal_spec_path: Path
+) -> None:
     cat = load_default_catalog()
-    spec = load_spec(MINIMAL)
+    spec = load_spec(minimal_spec_path)
     plan = construct(spec, cat, foundry_version=VECTOR_VERSION)
     body = dict(plan.body)
     # Flip one hex nibble of plan_sha256.
@@ -66,9 +66,9 @@ def test_bit_flipped_plan_sha256_fails_plan_bind(tmp_path: Path) -> None:
     assert "plan_sha256" in excinfo.value.message
 
 
-def test_catalog_digest_mismatch_fails(tmp_path: Path) -> None:
+def test_catalog_digest_mismatch_fails(tmp_path: Path, minimal_spec_path: Path) -> None:
     cat = load_default_catalog()
-    spec = load_spec(MINIMAL)
+    spec = load_spec(minimal_spec_path)
     plan = construct(spec, cat, foundry_version=VECTOR_VERSION)
     body = dict(plan.body)
     body["catalog_digest"] = "0" * 64
@@ -85,9 +85,11 @@ def test_catalog_digest_mismatch_fails(tmp_path: Path) -> None:
     assert "catalog_digest" in excinfo.value.message
 
 
-def test_foundry_version_mismatch_fails(tmp_path: Path) -> None:
+def test_foundry_version_mismatch_fails(
+    tmp_path: Path, minimal_spec_path: Path
+) -> None:
     cat = load_default_catalog()
-    spec = load_spec(MINIMAL)
+    spec = load_spec(minimal_spec_path)
     plan = construct(spec, cat, foundry_version=VECTOR_VERSION)
     body = dict(plan.body)
     body["foundry"] = {"version": "9.9.9-evil"}
@@ -104,10 +106,12 @@ def test_foundry_version_mismatch_fails(tmp_path: Path) -> None:
     assert "foundry.version" in excinfo.value.message
 
 
-def test_mismatch_creates_no_stage_directories(tmp_path: Path) -> None:
+def test_mismatch_creates_no_stage_directories(
+    tmp_path: Path, minimal_spec_path: Path
+) -> None:
     """Bind failure must not invoke any write/stage API (no stage dirs)."""
     cat = load_default_catalog()
-    spec = load_spec(MINIMAL)
+    spec = load_spec(minimal_spec_path)
     plan = construct(spec, cat, foundry_version=VECTOR_VERSION)
     body = dict(plan.body)
     body["plan_sha256"] = "deadbeef" * 8
@@ -127,9 +131,9 @@ def test_mismatch_creates_no_stage_directories(tmp_path: Path) -> None:
     assert not any(n.startswith(".foundry-stage") for n in after)
 
 
-def test_rebuild_unbound_path_matches_construct() -> None:
+def test_rebuild_unbound_path_matches_construct(minimal_spec_path: Path) -> None:
     cat = load_default_catalog()
-    spec = load_spec(MINIMAL)
+    spec = load_spec(minimal_spec_path)
     # The unbound path must be an honest rebuild with no plan-bind digest check.
     rebuilt = rebuild_plan(
         spec=spec,
@@ -177,9 +181,9 @@ def test_load_plan_artifact_root_not_object(tmp_path: Path) -> None:
     assert excinfo.value.code == "plan_bind.root"
 
 
-def test_bind_plan_accepts_dict_artifact_directly() -> None:
+def test_bind_plan_accepts_dict_artifact_directly(minimal_spec_path: Path) -> None:
     cat = load_default_catalog()
-    spec = load_spec(MINIMAL)
+    spec = load_spec(minimal_spec_path)
     plan = construct(spec, cat, foundry_version=VECTOR_VERSION)
     bound = bind_plan(
         spec=spec,

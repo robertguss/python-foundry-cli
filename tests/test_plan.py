@@ -14,16 +14,13 @@ from python_foundry.plan import (
 )
 from python_foundry.spec import load_spec, parse_spec_text
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
-MINIMAL_CLI = REPO_ROOT / "examples" / "minimal-cli.toml"
-
 # Fixed foundry version pin for the frozen plan_sha256 test vector so package
 # version bumps do not silently invalidate the vector.
 VECTOR_FOUNDRY_VERSION = "0.1.0-vector"
 
 
-def test_construct_minimal_cli() -> None:
-    spec = load_spec(MINIMAL_CLI)
+def test_construct_minimal_cli(minimal_spec_path: Path) -> None:
+    spec = load_spec(minimal_spec_path)
     plan = construct(
         spec,
         load_default_catalog(),
@@ -46,8 +43,8 @@ def test_construct_minimal_cli() -> None:
     assert "ty_check" in {s["id"] for s in plan.body["external_steps"]}
 
 
-def test_plan_sha256_matches_preimage() -> None:
-    spec = load_spec(MINIMAL_CLI)
+def test_plan_sha256_matches_preimage(minimal_spec_path: Path) -> None:
+    spec = load_spec(minimal_spec_path)
     plan = construct(
         spec,
         load_default_catalog(),
@@ -60,9 +57,9 @@ def test_plan_sha256_matches_preimage() -> None:
     assert plan.preimage == canonical_json_bytes(body)
 
 
-def test_deterministic_repeated_construct() -> None:
+def test_deterministic_repeated_construct(minimal_spec_path: Path) -> None:
     cat = load_default_catalog()
-    spec = load_spec(MINIMAL_CLI)
+    spec = load_spec(minimal_spec_path)
     a = construct(spec, cat, foundry_version=VECTOR_FOUNDRY_VERSION)
     b = construct(spec, cat, foundry_version=VECTOR_FOUNDRY_VERSION)
     assert a.plan_sha256 == b.plan_sha256
@@ -98,9 +95,9 @@ def test_profile_order_independent_plan_body() -> None:
     ]
 
 
-def test_verify_fields_on_plan_from_cli() -> None:
+def test_verify_fields_on_plan_from_cli(minimal_spec_path: Path) -> None:
     plan = construct(
-        load_spec(MINIMAL_CLI),
+        load_spec(minimal_spec_path),
         load_default_catalog(),
         cli_verify="strict",
         foundry_version=VECTOR_FOUNDRY_VERSION,
@@ -115,10 +112,10 @@ def test_verify_fields_on_plan_from_cli() -> None:
 FIXED_PLAN_SHA256 = "196173f7d8cda58918669e330405c4185760d24b3aa5168c9c3b94c39b1307e7"
 
 
-def test_fixed_plan_sha256_test_vector() -> None:
+def test_fixed_plan_sha256_test_vector(minimal_spec_path: Path) -> None:
     """Frozen vector: minimal-cli cell + pinned foundry version → known hash."""
     plan = construct(
-        load_spec(MINIMAL_CLI),
+        load_spec(minimal_spec_path),
         load_default_catalog(),
         foundry_version=VECTOR_FOUNDRY_VERSION,
     )

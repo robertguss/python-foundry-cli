@@ -22,8 +22,6 @@ from python_foundry.report import (
 )
 from python_foundry.spec import load_spec
 
-MINIMAL_CLI = Path(__file__).resolve().parents[1] / "examples" / "minimal-cli.toml"
-
 
 def test_error_class_closed_set() -> None:
     assert ERROR_CLASSES == frozenset(
@@ -117,8 +115,8 @@ def test_failure_json_optional_fields() -> None:
     assert body["code"] == "plan_bind.mismatch"
 
 
-def test_plan_text_readable() -> None:
-    plan = construct(load_spec(MINIMAL_CLI), load_default_catalog())
+def test_plan_text_readable(minimal_spec_path: Path) -> None:
+    plan = construct(load_spec(minimal_spec_path), load_default_catalog())
     text = plan_text(plan)
     assert "foundry plan" in text
     assert plan.plan_sha256 in text
@@ -127,15 +125,15 @@ def test_plan_text_readable() -> None:
     assert "files:" in text
 
 
-def test_plan_json_success() -> None:
-    plan = construct(load_spec(MINIMAL_CLI), load_default_catalog())
+def test_plan_json_success(minimal_spec_path: Path) -> None:
+    plan = construct(load_spec(minimal_spec_path), load_default_catalog())
     body = json.loads(plan_json(plan))
     assert body["ok"] is True
     assert body["plan"]["plan_sha256"] == plan.plan_sha256
 
 
-def test_validate_text_and_json() -> None:
-    spec = load_spec(MINIMAL_CLI)
+def test_validate_text_and_json(minimal_spec_path: Path) -> None:
+    spec = load_spec(minimal_spec_path)
     text = validate_text(spec)
     assert "foundry validate: ok" in text
     assert "example-cli" in text

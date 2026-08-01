@@ -17,14 +17,12 @@ from python_foundry.plan import construct
 from python_foundry.render import render_plan_into_stage
 from python_foundry.spec import load_spec
 
-REPO = Path(__file__).resolve().parents[1]
-MINIMAL = REPO / "examples" / "minimal-cli.toml"
-runner = CliRunner()
 
-
-def test_render_and_lock_in_stage(tmp_path: Path) -> None:
+def test_render_and_lock_in_stage(
+    tmp_path: Path, minimal_spec_path: Path
+) -> None:
     dest = tmp_path / "example-cli"
-    spec = load_spec(MINIMAL)
+    spec = load_spec(minimal_spec_path)
     plan = construct(spec, load_default_catalog())
     stage = create_stage(dest)
     render_plan_into_stage(plan, spec, stage)
@@ -35,18 +33,19 @@ def test_render_and_lock_in_stage(tmp_path: Path) -> None:
     assert not dest.exists()
 
 
-def test_generate_bind_mismatch_before_stage(tmp_path: Path) -> None:
+def test_generate_bind_mismatch_before_stage(
+    tmp_path: Path, minimal_spec_path: Path
+) -> None:
     dest = tmp_path / "out"
-    spec = load_spec(MINIMAL)
+    spec = load_spec(minimal_spec_path)
     plan = construct(spec, load_default_catalog())
     body = dict(plan.body)
     body["plan_sha256"] = "0" * 64
     artifact = tmp_path / "bad-plan.json"
     artifact.write_text(json.dumps(body), encoding="utf-8")
-    before = list(tmp_path.iterdir())
     with pytest.raises(GenerateError) as excinfo:
         generate(
-            spec_path=MINIMAL,
+            spec_path=minimal_spec_path,
             destination=dest,
             plan_path=artifact,
             run_lock=False,
@@ -57,7 +56,6 @@ def test_generate_bind_mismatch_before_stage(tmp_path: Path) -> None:
     # No stage dirs created.
     after_names = {p.name for p in tmp_path.iterdir()}
     assert not any(n.startswith(".foundry-stage") for n in after_names)
-    del before
 
 
 def test_generate_full_minimal_cli(tmp_path: Path) -> None:
@@ -109,7 +107,9 @@ verify = "none"
     assert "no tooling proof" in result.verify_warning.lower()
 
 
-def test_generate_cmd_verify_none_prints_warning(tmp_path: Path) -> None:
+def test_generate_cmd_verify_none_prints_warning(
+    tmp_path: Path, cli_runner: CliRunner
+) -> None:
     dest = tmp_path / "none-cli-cmd"
     spec_path = tmp_path / "cell.toml"
     spec_path.write_text(
@@ -122,12 +122,16 @@ profiles = []
 ''',
         encoding="utf-8",
     )
-    result = runner.invoke(
+    result = cli_runner.invoke(
         app, ["generate", "--spec", str(spec_path), "--verify", "none"]
     )
     assert result.exit_code == 0
     assert "WARNING" in result.output
 
+
+def test_generate_cmd_verify_none_json_includes_warning(
+    tmp_path: Path, cli_runner: CliRunner
+) -> None:
     dest_json = tmp_path / "none-cli-cmd-json"
     spec_json = tmp_path / "cell-json.toml"
     spec_json.write_text(
@@ -140,7 +144,7 @@ profiles = []
 ''',
         encoding="utf-8",
     )
-    js = runner.invoke(
+    js = cli_runner.invoke(
         app,
         ["generate", "--spec", str(spec_json), "--verify", "none", "--json"],
     )
