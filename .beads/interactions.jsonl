@@ -1,0 +1,1 @@
+{"id":"int-34f96b04bb3121313fa7479d384a2649","kind":"field_change","created_at":"2026-08-01T03:14:13.565459742Z","actor":"Robert Guss","issue_id":"python-foundry-cli-hvt","extra":{"field":"status","new_value":"closed","old_value":"in_progress","reason":"Implemented; gates green; pushed to origin."}}
