@@ -1,8 +1,7 @@
-# scripts archetype — stub inventory (full bodies PHASE-04).
 schema = 1
 id = "scripts"
 kind = "archetype"
-description = "Scripts-oriented project archetype"
+description = "Scripts-oriented project archetype (PEP 723 + uv run)"
 apply_order = 10
 
 [[files]]
@@ -10,3 +9,22 @@ path = "scripts/hello.py"
 render = "template"
 source = "files/hello.py.tmpl"
 mode = "0644"
+
+[[files]]
+path = "tests/test_hello_script.py"
+render = "template"
+source = "files/test_hello_script.py.tmpl"
+mode = "0644"
+
+[[files]]
+path = ".agents/skills/add-script/SKILL.md"
+render = "template"
+source = "files/agents/skills/add-script/SKILL.md.tmpl"
+mode = "0644"
+
+[[files]]
+path = "pyproject.toml"
+render = "template"
+source = "files/pyproject.toml.tmpl"
+mode = "0644"
+override = true

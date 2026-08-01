@@ -1,12 +1,17 @@
-# http profile — stub inventory (full bodies PHASE-04).
 schema = 1
 id = "http"
 kind = "profile"
-description = "HTTP client profile"
+description = "HTTP client profile (httpx)"
 apply_order = 20
 
 [[files]]
-path = "src/{{name}}/http_client.py"
+path = "src/{{module}}/http_client.py"
 render = "template"
 source = "files/http_client.py.tmpl"
+mode = "0644"
+
+[[files]]
+path = "pyproject.profile.http.toml"
+render = "static"
+source = "files/pyproject.profile.http.toml.static"
 mode = "0644"

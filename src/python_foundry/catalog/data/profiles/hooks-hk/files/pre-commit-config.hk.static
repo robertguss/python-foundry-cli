@@ -1,0 +1,2 @@
+# hooks-hk replaces Core default pre-commit emit (REQ-043).
+repos: []

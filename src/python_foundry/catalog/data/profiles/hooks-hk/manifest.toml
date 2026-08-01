@@ -1,4 +1,3 @@
-# hooks-hk profile — replaces default pre-commit hooks (stub inventory).
 schema = 1
 id = "hooks-hk"
 kind = "profile"
@@ -10,3 +9,10 @@ path = "hk.pkl"
 render = "static"
 source = "files/hk.pkl.static"
 mode = "0644"
+
+[[files]]
+path = ".pre-commit-config.yaml"
+render = "static"
+source = "files/pre-commit-config.hk.static"
+mode = "0644"
+override = true

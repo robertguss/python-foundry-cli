@@ -46,3 +46,9 @@ path = ".github/workflows/ci.yml"
 render = "template"
 source = "files/workflows/ci.yml.tmpl"
 mode = "0644"
+
+[[files]]
+path = ".pre-commit-config.yaml"
+render = "static"
+source = "files/pre-commit-config.yaml.static"
+mode = "0644"

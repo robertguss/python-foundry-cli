@@ -1,12 +1,29 @@
-# data-etl archetype — stub inventory (distinct from profile/data-etl; FND-007).
 schema = 1
 id = "data-etl"
 kind = "archetype"
-description = "Data/ETL project archetype"
+description = "Data/ETL project archetype (src package; distinct from profile/data-etl)"
 apply_order = 10
 
 [[files]]
-path = "src/{{name}}/pipeline.py"
+path = "src/{{module}}/pipeline.py"
 render = "template"
 source = "files/pipeline.py.tmpl"
+mode = "0644"
+
+[[files]]
+path = "src/{{module}}/__init__.py"
+render = "template"
+source = "files/init.py.tmpl"
+mode = "0644"
+
+[[files]]
+path = "tests/test_pipeline.py"
+render = "template"
+source = "files/test_pipeline.py.tmpl"
+mode = "0644"
+
+[[files]]
+path = ".agents/skills/add-script/SKILL.md"
+render = "template"
+source = "files/agents/skills/add-script/SKILL.md.tmpl"
 mode = "0644"
