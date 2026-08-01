@@ -6,13 +6,13 @@ description = "Conventional CLI project archetype (Typer entrypoint)"
 apply_order = 10
 
 [[files]]
-path = "src/{{name}}/__init__.py"
+path = "src/{{module}}/__init__.py"
 render = "template"
 source = "files/init.py.tmpl"
 mode = "0644"
 
 [[files]]
-path = "src/{{name}}/cli.py"
+path = "src/{{module}}/cli.py"
 render = "template"
 source = "files/cli.py.tmpl"
 mode = "0644"

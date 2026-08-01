@@ -221,13 +221,79 @@ def catalog_show_cmd(
 
 
 @app.command("generate")
-def generate_cmd() -> None:
-    """Stub until PHASE-03 (stage/place + render + lock + verify)."""
-    typer.echo(
-        "foundry generate is not implemented yet (PHASE-03).",
-        err=True,
-    )
-    raise typer.Exit(2)
+def generate_cmd(
+    spec: Annotated[
+        str,
+        typer.Option("--spec", help="Project Spec path, or '-' for stdin."),
+    ],
+    dest: Annotated[
+        str | None,
+        typer.Option("--dest", help="Override destination path."),
+    ] = None,
+    plan: Annotated[
+        str | None,
+        typer.Option("--plan", help="Optional plan JSON to bind before stage writes."),
+    ] = None,
+    verify: Annotated[
+        str | None,
+        typer.Option("--verify", help="CLI verify override: default|strict|none."),
+    ] = None,
+    json_out: Annotated[
+        bool,
+        typer.Option("--json", help="Machine-readable JSON report."),
+    ] = False,
+) -> None:
+    """Stage → lock → verify → exclusive place (PHASE-03)."""
+    from python_foundry.generate import GenerateError, generate
+    from python_foundry.report import failure_json, failure_text
+    from python_foundry.verify import NETWORK_DISCLOSURE
+
+    try:
+        result = generate(
+            spec_path=spec,
+            destination=dest,
+            plan_path=plan,
+            cli_verify=verify,
+        )
+    except GenerateError as exc:
+        if json_out:
+            typer.echo(
+                failure_json(
+                    error_class=exc.error_class,
+                    message=exc.message,
+                    code=exc.code,
+                    stage_path=exc.stage_path,
+                    verify_mode=exc.verify_mode,
+                    plan_sha256=exc.plan_sha256,
+                )
+            )
+        else:
+            msg = failure_text(
+                error_class=exc.error_class,
+                message=exc.message,
+                code=exc.code,
+            )
+            if exc.stage_path:
+                msg += f"stage_path: {exc.stage_path}\n"
+            typer.echo(msg, err=True)
+        raise typer.Exit(1) from exc
+
+    if json_out:
+        payload = {
+            "ok": True,
+            "destination": str(result.destination),
+            "plan_sha256": result.plan.plan_sha256,
+            "verify_mode": result.verify_mode,
+            "verify_source": result.verify_source,
+            "network_disclosure": result.network_disclosure,
+        }
+        typer.echo(canonical_json_bytes(payload).decode("utf-8"))
+    else:
+        typer.echo("foundry generate: ok")
+        typer.echo(f"  destination: {result.destination}")
+        typer.echo(f"  plan_sha256: {result.plan.plan_sha256}")
+        typer.echo(f"  verify: {result.verify_mode} (source={result.verify_source})")
+        typer.echo(f"  network: {NETWORK_DISCLOSURE}")
 
 
 @app.callback()
